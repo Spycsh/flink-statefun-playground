@@ -33,7 +33,7 @@ APP_PATH = Arg(key="APP_PATH", default="/opt/statefun/example.json", type=str)
 APP_KAFKA_HOST = Arg(key="APP_KAFKA_HOST", default="kafka-broker:9092", type=str)
 APP_KAFKA_TOPIC = Arg(key="APP_KAFKA_TOPIC", default="input", type=str)
 APP_DELAY_SECONDS = Arg(key="APP_DELAY_SECONDS", default="1", type=int)
-# APP_DELAY_START_SECONDS = Arg(key="APP_DELAY_START_SECONDS", default="0", type=int)
+APP_DELAY_START_SECONDS = Arg(key="APP_DELAY_START_SECONDS", default="1", type=int)
 APP_LOOP = Arg(key="APP_LOOP", default="true", type=lambda s: s.lower() == "true")
 APP_JSON_PATH = Arg(key="APP_JSON_PATH", default="name", type=parse)
 
@@ -92,8 +92,9 @@ def main():
     signal.signal(signal.SIGINT, handler)
     # get the key,value request generators
     requests = create_requests(path=env(APP_PATH), loop=env(APP_LOOP), json_path=env(APP_JSON_PATH))
-    print("delaying for 10 seconds...")
-    time.sleep(10)
+    
+    print("delaying start of producing for {0} seconds...".format(env(APP_DELAY_START_SECONDS)))
+    time.sleep(int(env(APP_DELAY_START_SECONDS)))
     # produce forever
     while True:
         try:
