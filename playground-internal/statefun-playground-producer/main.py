@@ -33,6 +33,7 @@ APP_PATH = Arg(key="APP_PATH", default="/opt/statefun/example.json", type=str)
 APP_KAFKA_HOST = Arg(key="APP_KAFKA_HOST", default="kafka-broker:9092", type=str)
 APP_KAFKA_TOPIC = Arg(key="APP_KAFKA_TOPIC", default="input", type=str)
 APP_DELAY_SECONDS = Arg(key="APP_DELAY_SECONDS", default="1", type=int)
+APP_DELAY_START_SECONDS = Arg(key="APP_DELAY_START_SECONDS", default="0", type=int)
 APP_LOOP = Arg(key="APP_LOOP", default="true", type=lambda s: s.lower() == "true")
 APP_JSON_PATH = Arg(key="APP_JSON_PATH", default="name", type=parse)
 
@@ -73,7 +74,9 @@ class KProducer(object):
         self.producer.flush()
 
 
-def produce(producer, delay_seconds: int, requests):
+def produce(producer, delay_seconds: int, requests, delay_start_seconds: int):
+    if delay_start_seconds > 0:
+        time.sleep(delay_start_seconds)
     for key, js in requests:
         value = json.dumps(js)
         producer.send(key=key, value=value)
@@ -95,7 +98,7 @@ def main():
     while True:
         try:
             producer = KProducer(broker=env(APP_KAFKA_HOST), topic=env(APP_KAFKA_TOPIC))
-            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests)
+            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests, delay_start_seconds=env(APP_DELAY_START_SECONDS))
             print("Done producing, good bye!", flush=True)
             return
         except SystemExit:
