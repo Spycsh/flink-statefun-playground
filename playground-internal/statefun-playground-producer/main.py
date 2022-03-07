@@ -75,8 +75,6 @@ class KProducer(object):
 
 
 def produce(producer, delay_seconds: int, requests):
-    if delay_start_seconds > 0:
-        time.sleep(delay_start_seconds)
     for key, js in requests:
         value = json.dumps(js)
         producer.send(key=key, value=value)
