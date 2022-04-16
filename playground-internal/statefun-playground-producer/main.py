@@ -79,6 +79,7 @@ def produce(producer, delay_seconds: int, requests):
         value = json.dumps(js)
         producer.send(key=key, value=value)
         if delay_seconds > 0:
+            print(delay_seconds)
             time.sleep(delay_seconds)
 
 
