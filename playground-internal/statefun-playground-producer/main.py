@@ -83,7 +83,7 @@ def produce(producer, delay_seconds: int, requests, end_sig: bool):
             print(delay_seconds)
             time.sleep(delay_seconds)
     if end_sig:
-        producer.send("-1", "{'src_id': '-1', 'dst_id': '-1', 'timestamp': '-1'}")  # send the end signal record
+        producer.send("-1", '{"src_id": "-1", "dst_id": "-1", "timestamp": "-1"}')  # send the end signal record
 
 
 def handler(number, frame):
