@@ -36,6 +36,7 @@ APP_DELAY_SECONDS = Arg(key="APP_DELAY_SECONDS", default="1", type=int)
 APP_DELAY_START_SECONDS = Arg(key="APP_DELAY_START_SECONDS", default="1", type=int)
 APP_LOOP = Arg(key="APP_LOOP", default="true", type=lambda s: s.lower() == "true")
 APP_JSON_PATH = Arg(key="APP_JSON_PATH", default="name", type=parse)
+APP_FILE_END_SIG = Arg(key="APP_FILE_END_SIG", default="false", type=lambda s: s.lower() == "true")
 
 
 def env(arg: Arg):
@@ -74,13 +75,15 @@ class KProducer(object):
         self.producer.flush()
 
 
-def produce(producer, delay_seconds: int, requests):
+def produce(producer, delay_seconds: int, requests, end_sig: bool):
     for key, js in requests:
         value = json.dumps(js)
         producer.send(key=key, value=value)
         if delay_seconds > 0:
             print(delay_seconds)
             time.sleep(delay_seconds)
+    if end_sig:
+        producer.send("-1", "{'src_id': '-1', 'dst_id': '-1', 'timestamp': '-1'}")  # send the end signal record
 
 
 def handler(number, frame):
@@ -100,7 +103,7 @@ def main():
     while True:
         try:
             producer = KProducer(broker=env(APP_KAFKA_HOST), topic=env(APP_KAFKA_TOPIC))
-            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests)
+            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests, end_sig=env(APP_FILE_END_SIG))
             print("Done producing, good bye!", flush=True)
             return
         except SystemExit:
