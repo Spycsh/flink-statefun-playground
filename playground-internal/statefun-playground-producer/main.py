@@ -36,6 +36,7 @@ APP_DELAY_SECONDS = Arg(key="APP_DELAY_SECONDS", default="1", type=int)
 APP_DELAY_START_SECONDS = Arg(key="APP_DELAY_START_SECONDS", default="1", type=int)
 APP_LOOP = Arg(key="APP_LOOP", default="true", type=lambda s: s.lower() == "true")
 APP_JSON_PATH = Arg(key="APP_JSON_PATH", default="name", type=parse)
+APP_FILE_START_SIG = Arg(key="APP_FILE_START_SIG", default="false", type=lambda s: s.lower() == "true")
 APP_FILE_END_SIG = Arg(key="APP_FILE_END_SIG", default="false", type=lambda s: s.lower() == "true")
 
 
@@ -75,7 +76,9 @@ class KProducer(object):
         self.producer.flush()
 
 
-def produce(producer, delay_seconds: int, requests, end_sig: bool):
+def produce(producer, delay_seconds: int, requests, start_sig:bool, end_sig: bool):
+    if start_sig:
+        producer.send("-1", '{"src_id": "-1", "dst_id": "-1", "timestamp": "-1"}')  # send the start signal record
     for key, js in requests:
         value = json.dumps(js)
         producer.send(key=key, value=value)
@@ -83,7 +86,7 @@ def produce(producer, delay_seconds: int, requests, end_sig: bool):
             print(delay_seconds)
             time.sleep(delay_seconds)
     if end_sig:
-        producer.send("-1", '{"src_id": "-1", "dst_id": "-1", "timestamp": "-1"}')  # send the end signal record
+        producer.send("-2", '{"src_id": "-2", "dst_id": "-2", "timestamp": "-2"}')  # send the end signal record
 
 
 def handler(number, frame):
@@ -103,7 +106,7 @@ def main():
     while True:
         try:
             producer = KProducer(broker=env(APP_KAFKA_HOST), topic=env(APP_KAFKA_TOPIC))
-            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests, end_sig=env(APP_FILE_END_SIG))
+            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests, start_sig=env(APP_FILE_START_SIG), end_sig=env(APP_FILE_END_SIG))
             print("Done producing, good bye!", flush=True)
             return
         except SystemExit:
