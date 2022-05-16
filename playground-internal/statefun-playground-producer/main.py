@@ -36,8 +36,6 @@ APP_DELAY_SECONDS = Arg(key="APP_DELAY_SECONDS", default="1", type=int)
 APP_DELAY_START_SECONDS = Arg(key="APP_DELAY_START_SECONDS", default="1", type=int)
 APP_LOOP = Arg(key="APP_LOOP", default="true", type=lambda s: s.lower() == "true")
 APP_JSON_PATH = Arg(key="APP_JSON_PATH", default="name", type=parse)
-APP_FILE_START_SIG = Arg(key="APP_FILE_START_SIG", default="false", type=lambda s: s.lower() == "true")
-APP_FILE_END_SIG = Arg(key="APP_FILE_END_SIG", default="false", type=lambda s: s.lower() == "true")
 
 
 def env(arg: Arg):
@@ -77,16 +75,12 @@ class KProducer(object):
 
 
 def produce(producer, delay_seconds: int, requests, start_sig:bool, end_sig: bool):
-    if start_sig:
-        producer.send("-1", '{"src_id": "-1", "dst_id": "-1", "timestamp": "-1"}')  # send the start signal record
     for key, js in requests:
         value = json.dumps(js)
         producer.send(key=key, value=value)
         if delay_seconds > 0:
             print(delay_seconds)
             time.sleep(delay_seconds)
-    if end_sig:
-        producer.send("-2", '{"src_id": "-2", "dst_id": "-2", "timestamp": "-2"}')  # send the end signal record
 
 
 def handler(number, frame):
