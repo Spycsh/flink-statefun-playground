@@ -74,7 +74,7 @@ class KProducer(object):
         self.producer.flush()
 
 
-def produce(producer, delay_seconds: int, requests, start_sig:bool, end_sig: bool):
+def produce(producer, delay_seconds: int, requests):
     for key, js in requests:
         value = json.dumps(js)
         producer.send(key=key, value=value)
@@ -100,7 +100,7 @@ def main():
     while True:
         try:
             producer = KProducer(broker=env(APP_KAFKA_HOST), topic=env(APP_KAFKA_TOPIC))
-            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests, start_sig=env(APP_FILE_START_SIG), end_sig=env(APP_FILE_END_SIG))
+            produce(producer=producer, delay_seconds=env(APP_DELAY_SECONDS), requests=requests)
             print("Done producing, good bye!", flush=True)
             return
         except SystemExit:
